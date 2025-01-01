@@ -1,3 +1,5 @@
+mod configurator;
+
 fn main() {
-    println!("Hello, world!");
+    println!("{:?}", configurator::load_config());
 }
