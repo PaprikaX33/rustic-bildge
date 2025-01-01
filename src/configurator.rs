@@ -6,10 +6,31 @@ use toml;
 
 #[derive(Debug, Deserialize)]
 pub struct AuthConfig {
-    #[serde(default = "default_drop_dir", deserialize_with = "path_deserializer")]
+    #[serde(
+        default = "AuthConfig::default_drop_dir",
+        deserialize_with = "path_deserializer"
+    )]
     drop_location: PathBuf,
+    #[serde(default = "AuthConfig::default_port")]
+    port: u32,
 }
+impl Default for AuthConfig {
+    fn default() -> Self {
+        Self {
+            drop_location: Self::default_drop_dir(),
+            port: Self::default_port(),
+        }
+    }
+}
+impl AuthConfig {
+    fn default_drop_dir() -> PathBuf {
+        PathBuf::from("./dropbildge")
+    }
 
+    fn default_port() -> u32 {
+        8000
+    }
+}
 pub fn load_config() -> AuthConfig {
     // Determine the package root for debug mode
     let package_root = env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
@@ -31,7 +52,7 @@ pub fn load_config() -> AuthConfig {
 
     if !config_path.exists() {
         return AuthConfig {
-            drop_location: default_drop_dir(),
+            ..Default::default()
         };
     }
     // Print out the path for demonstration purposes
@@ -53,8 +74,4 @@ where
 {
     let s: String = Deserialize::deserialize(deserializer)?;
     Ok(PathBuf::from(s))
-}
-
-fn default_drop_dir() -> PathBuf {
-    PathBuf::from("./dropbildge")
 }
