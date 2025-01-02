@@ -1,39 +1,25 @@
-use serde::{self, Deserialize};
+use serde::{self, Deserialize, Serialize};
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 use toml;
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AuthConfig {
-    #[serde(
-        default = "AuthConfig::default_drop_dir",
-        deserialize_with = "path_deserializer"
-    )]
+    #[serde(default, deserialize_with = "path_deserializer")]
     pub drop_location: PathBuf,
-    #[serde(default = "AuthConfig::default_port")]
+    #[serde(default)]
     pub port: u32,
-    #[serde(default = "AuthConfig::default_bind")]
+    #[serde(default)]
     pub bind: String,
 }
 impl Default for AuthConfig {
     fn default() -> Self {
         Self {
-            drop_location: Self::default_drop_dir(),
-            bind: Self::default_bind(),
-            port: Self::default_port(),
+            drop_location: PathBuf::from("./dropbildge"),
+            bind: "0.0.0.0".to_string(),
+            port: 8000,
         }
-    }
-}
-impl AuthConfig {
-    fn default_drop_dir() -> PathBuf {
-        PathBuf::from("./dropbildge")
-    }
-    fn default_bind() -> String {
-        "0.0.0.0".to_string()
-    }
-    fn default_port() -> u32 {
-        8000
     }
 }
 pub fn load_config() -> AuthConfig {
