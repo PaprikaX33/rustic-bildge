@@ -10,9 +10,9 @@ pub struct AuthConfig {
         default = "AuthConfig::default_drop_dir",
         deserialize_with = "path_deserializer"
     )]
-    drop_location: PathBuf,
+    pub drop_location: PathBuf,
     #[serde(default = "AuthConfig::default_port")]
-    port: u32,
+    pub port: u32,
 }
 impl Default for AuthConfig {
     fn default() -> Self {
