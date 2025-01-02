@@ -6,20 +6,34 @@ use toml;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AuthConfig {
-    #[serde(default, deserialize_with = "path_deserializer")]
+    #[serde(
+        default = "AuthConfig::drop_def",
+        deserialize_with = "path_deserializer"
+    )]
     pub drop_location: PathBuf,
-    #[serde(default)]
-    pub port: u32,
-    #[serde(default)]
+    #[serde(default = "AuthConfig::bind_def")]
     pub bind: String,
+    #[serde(default = "AuthConfig::port_def")]
+    pub port: u32,
 }
 impl Default for AuthConfig {
     fn default() -> Self {
         Self {
-            drop_location: PathBuf::from("./dropbildge"),
-            bind: "0.0.0.0".to_string(),
-            port: 8000,
+            drop_location: Self::drop_def(),
+            bind: Self::bind_def(),
+            port: Self::port_def(),
         }
+    }
+}
+impl AuthConfig {
+    fn drop_def() -> PathBuf {
+        PathBuf::from("./dropbildge")
+    }
+    fn bind_def() -> String {
+        "0.0.0.0".to_string()
+    }
+    fn port_def() -> u32 {
+        8000
     }
 }
 pub fn load_config(directpath: Option<PathBuf>) -> AuthConfig {
