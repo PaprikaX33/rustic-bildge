@@ -1,44 +1,43 @@
+use clap::{Arg, Command};
+use std::path::PathBuf;
 mod configurator;
-use axum::{extract::State, routing::get, Router};
-use std::sync::Arc;
-use tokio::sync::Notify;
+mod server;
 
-#[tokio::main]
-async fn main() {
-    let config = configurator::load_config();
-    let data = match config.drop_location.canonicalize() {
-        Ok(val) => val.display().to_string(),
-        Err(_) => "Invalid Path".to_string(),
-    };
-    let shutdown_trigger = Arc::new(Notify::new());
-    let app_state = AppState {
-        shutdown_trigger: shutdown_trigger.clone(),
-    };
-
-    // build our application with a single route
-    let app = Router::new()
-        .route("/", get(move || async move { format!("{:?}", data) }))
-        .route("/kill", get(shutdown))
-        .with_state(app_state);
-
-    // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.bind, config.port))
-        .await
-        .unwrap();
-    axum::serve(listener, app)
-        .with_graceful_shutdown(async move { shutdown_trigger.notified().await })
-        .await
-        .expect("Failed to run server");
-}
-
-#[derive(Clone)]
-struct AppState {
-    shutdown_trigger: Arc<Notify>,
-}
-
-// Trigger shutdown handler
-async fn shutdown(State(state): State<AppState>) -> &'static str {
-    println!("Kill command received");
-    state.shutdown_trigger.notify_one();
-    "Shutting down..."
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = Command::new("RusticBildge")
+        .author("Paprika")
+        .about("A lightweight one solution for uploading file with HTTP")
+        .arg(
+            Arg::new("cnf")
+                .long("config")
+                .short('c')
+                .value_name("FILE")
+                .visible_aliases(["conf, configuration"])
+                .help("Use the supplied configuration file"),
+        )
+        .subcommand(
+            Command::new("config-generate")
+                .about("Generate boilerplate configuration")
+                .arg(
+                    Arg::new("out")
+                        .required(true)
+                        .value_name("OUTPUT")
+                        .help("The filename to place the boilerplate configuration"),
+                ),
+        )
+        .version(env!("CARGO_PKG_VERSION"))
+        .get_matches_from(wild::args());
+    match args.subcommand() {
+        Some(("config-generate", smatch)) => {
+            configurator::generate_boilerplate_config(PathBuf::from(
+                smatch.get_one::<String>("out").unwrap(),
+            ))
+            .unwrap();
+            return Ok(());
+        }
+        _ => {}
+    }
+    let config = configurator::load_config(args.get_one::<String>("cnf").map(PathBuf::from));
+    println!("{:?}", config);
+    server::run_server(config)
 }

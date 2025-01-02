@@ -7,7 +7,8 @@ edition = "2021"
 
 [dependencies]
 axum = "0.8.1"
-tokio = {version="1.42.0", features = ["macros", "rt-multi-thread"]}
-serde = {version = "1.0.217", features = ["derive"] }
+tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread"] }
+serde = { version = "1.0.217", features = ["derive"] }
 toml = "0.8.19"
-clap = {version ="4.5.23", features = ["derive"]}
+clap = { version = "4.5.23", features = ["derive"] }
+wild = "2.2.1"
