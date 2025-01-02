@@ -1,11 +1,19 @@
 mod configurator;
 use axum::{extract::State, routing::get, Router};
+use configurator::AuthConfig;
 use std::sync::Arc;
+use tokio::runtime::Runtime;
 use tokio::sync::Notify;
 
-#[tokio::main]
-async fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = configurator::load_config(None);
+    println!("{:?}", config);
+    let runtime = Runtime::new()?;
+    runtime.block_on(init_server(config));
+    Ok(())
+}
+
+async fn init_server(config: AuthConfig) {
     let data = match config.drop_location.canonicalize() {
         Ok(val) => val.display().to_string(),
         Err(_) => "Invalid Path".to_string(),
