@@ -4,7 +4,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use toml;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AuthConfig {
     #[serde(
         default = "AuthConfig::default_drop_dir",
@@ -13,11 +13,14 @@ pub struct AuthConfig {
     pub drop_location: PathBuf,
     #[serde(default = "AuthConfig::default_port")]
     pub port: u32,
+    #[serde(default = "AuthConfig::default_bind")]
+    pub bind: String,
 }
 impl Default for AuthConfig {
     fn default() -> Self {
         Self {
             drop_location: Self::default_drop_dir(),
+            bind: Self::default_bind(),
             port: Self::default_port(),
         }
     }
@@ -26,7 +29,9 @@ impl AuthConfig {
     fn default_drop_dir() -> PathBuf {
         PathBuf::from("./dropbildge")
     }
-
+    fn default_bind() -> String {
+        "0.0.0.0".to_string()
+    }
     fn default_port() -> u32 {
         8000
     }
@@ -65,7 +70,7 @@ pub fn load_config() -> AuthConfig {
     let config: AuthConfig =
         toml::from_str(&config_content).expect("Failed to parse configuration file");
     println! {"Config loaded successfully"};
-    return config;
+    config
 }
 
 fn path_deserializer<'de, D>(deserializer: D) -> Result<PathBuf, D::Error>
