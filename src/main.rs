@@ -5,7 +5,7 @@ use tokio::sync::Notify;
 
 #[tokio::main]
 async fn main() {
-    let config = configurator::load_config();
+    let config = configurator::load_config(None);
     let data = match config.drop_location.canonicalize() {
         Ok(val) => val.display().to_string(),
         Err(_) => "Invalid Path".to_string(),
