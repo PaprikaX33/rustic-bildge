@@ -59,6 +59,12 @@ pub fn load_config() -> AuthConfig {
     config
 }
 
+pub fn generate_boilerplate_config(path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    let config = AuthConfig::default();
+    fs::write(path, toml::to_string_pretty(&config)?)?;
+    Ok(())
+}
+
 fn path_deserializer<'de, D>(deserializer: D) -> Result<PathBuf, D::Error>
 where
     D: serde::Deserializer<'de>,
