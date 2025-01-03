@@ -24,14 +24,13 @@
 </head>
 <body>
     <h1>Rustic Bildge</h1>
-
+    <div><a href="/kill">Kill</a> Server</div>
     <!-- Key Feature 1: Drag-and-Drop Support -->
     <div id="dropZone">Drag and drop a file here or click to select</div>
     <!-- Hidden file input for fallback and click-to-select -->
     <input type="file" id="fileInput" style="display: none;">
     <!-- Response area to show upload result -->
     <div id="response" style="margin-top: 20px;"></div>
-    <div><a href="/kill">Kill</a> Server</div>
     <script>
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
@@ -49,9 +48,9 @@
         dropZone.addEventListener('drop', async (event) => {
             event.preventDefault(); // Prevent default behavior
             dropZone.classList.remove('dragover'); // Remove highlight
-            const files = event.dataTransfer.files; // Get dropped files
+            const files = event.dataTransfer.files; // Get the dropped files
             if (files.length > 0) {
-                await uploadFile(files[0]); // Upload the first file
+                await uploadFile(files);
             }
         });
         // Handle click to open file input dialog (Key Feature 2 : Click for drag and drop)
@@ -60,15 +59,15 @@
         });
         // Handle file selection via input dialog (Key Feature 4: Fallback for unsupported devices)
         fileInput.addEventListener('change', async (event) => {
-            const files = event.target.files; // Get selected files
+            const files = event.target.files; // Get the selected files
             if (files.length > 0) {
-                await uploadFile(files[0]); // Upload the first file
+                await uploadFile(files);
             }
         });
         // Function to upload a file
-        async function uploadFile(file) {
+        async function uploadFile(files) {
             const formData = new FormData();
-            formData.append('file', file); // Append file to the form data
+            Array.from(files).forEach((file) => formData.append('files', file));
             try {
                 const response = await fetch('/receiver', { // Send POST request to /upload
                     method: 'POST',
@@ -78,7 +77,6 @@
                 responseDiv.textContent = `Upload successful: ${JSON.stringify(result, null, 2)}`;
             } catch (error) {
                 responseDiv.textContent = `Error uploading file: ${error}`;
-                //console.error(error); // Log error
             }
         }
     </script>
