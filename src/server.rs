@@ -1,5 +1,6 @@
 use crate::configurator::AuthConfig;
-use axum::{extract::State, routing::get, Router};
+mod frontpage;
+use axum::{extract::State, response::Redirect, routing::get, Router};
 use std::sync::Arc;
 use tokio::runtime::Runtime;
 use tokio::sync::Notify;
@@ -22,8 +23,10 @@ async fn init_server(config: AuthConfig) {
 
     // build our application with a single route
     let app = Router::new()
-        .route("/", get(move || async move { format!("{:?}", data) }))
+        .route("/debug", get(move || async move { format!("{:?}", data) }))
         .route("/kill", get(shutdown))
+        .route("/index", get(frontpage::serve))
+        .route("/", get(|| async { Redirect::permanent("/index") }))
         .with_state(app_state);
 
     // run our app with hyper, listening globally on port 3000
