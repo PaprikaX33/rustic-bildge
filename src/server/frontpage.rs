@@ -11,3 +11,13 @@ pub async fn serve() -> Response {
         ))))
         .unwrap()
 }
+
+pub async fn invalid() -> Response {
+    Response::builder()
+        .status(StatusCode::NOT_FOUND)
+        .body(Body::from(include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/html/404.html"
+        ))))
+        .unwrap()
+}

@@ -1,6 +1,13 @@
 use crate::configurator::AuthConfig;
+use std::path::PathBuf;
+mod backend;
 mod frontpage;
-use axum::{extract::State, response::Redirect, routing::get, Router};
+use axum::{
+    extract::{DefaultBodyLimit, State},
+    response::Redirect,
+    routing::{get, post},
+    Router,
+};
 use std::sync::Arc;
 use tokio::runtime::Runtime;
 use tokio::sync::Notify;
@@ -19,6 +26,7 @@ async fn init_server(config: AuthConfig) {
     let shutdown_trigger = Arc::new(Notify::new());
     let app_state = AppState {
         shutdown_trigger: shutdown_trigger.clone(),
+        drop_location: Arc::new(config.drop_location),
     };
 
     // build our application with a single route
@@ -27,6 +35,9 @@ async fn init_server(config: AuthConfig) {
         .route("/kill", get(shutdown))
         .route("/index", get(frontpage::serve))
         .route("/", get(|| async { Redirect::permanent("/index") }))
+        .route("/receiver", post(backend::receive))
+        .layer(DefaultBodyLimit::disable())
+        .fallback(frontpage::invalid)
         .with_state(app_state);
 
     // run our app with hyper, listening globally on port 3000
@@ -42,6 +53,7 @@ async fn init_server(config: AuthConfig) {
 #[derive(Clone)]
 struct AppState {
     shutdown_trigger: Arc<Notify>,
+    drop_location: Arc<PathBuf>,
 }
 
 // Trigger shutdown handler
