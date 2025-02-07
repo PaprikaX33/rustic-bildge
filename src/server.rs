@@ -27,6 +27,7 @@ async fn init_server(config: AuthConfig) {
     let app_state = AppState {
         shutdown_trigger: shutdown_trigger.clone(),
         drop_location: Arc::new(config.drop_location),
+        parent: Arc::new(config.generate_parent),
     };
 
     // build our application with a single route
@@ -54,6 +55,7 @@ async fn init_server(config: AuthConfig) {
 struct AppState {
     shutdown_trigger: Arc<Notify>,
     drop_location: Arc<PathBuf>,
+    parent: Arc<bool>,
 }
 
 // Trigger shutdown handler

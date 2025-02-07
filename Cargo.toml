@@ -2,12 +2,13 @@
 name = "rusticbildge"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.81.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 axum = {version="0.8.1", features=["multipart"]}
-tokio = { version = "1.42.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.42.0", features = ["rt-multi-thread", "fs", "sync"] }
 serde = { version = "1.0.217", features = ["derive"] }
 toml = "0.8.19"
 clap = { version = "4.5.23", features = ["derive"] }
