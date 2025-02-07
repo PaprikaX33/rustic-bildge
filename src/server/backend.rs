@@ -1,4 +1,5 @@
 use crate::server::AppState;
+use crate::time;
 use axum::{
     extract::{Multipart, State},
     http::StatusCode,
@@ -9,7 +10,7 @@ use axum_macros::debug_handler;
 use serde::Serialize;
 use std::sync::Arc;
 use std::{io::Result, path::PathBuf, vec::Vec};
-use tokio::fs;
+use tokio::{fs, io};
 
 #[derive(Serialize, Debug)]
 struct FieldInfo {
@@ -56,7 +57,10 @@ pub async fn receive(state: State<AppState>, mut multipart: Multipart) -> impl I
         }
     } {
         let name = field.name().unwrap_or("<unnamed>").to_string();
-        let file_name = field.file_name().unwrap_or("<no filename>").to_string();
+        let file_name = field
+            .file_name()
+            .unwrap_or(&time::current_time())
+            .to_string();
         let content_type = field
             .content_type()
             .unwrap_or("<no content type>")
