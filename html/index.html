@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Rustic Bildge</title>
+        <style>
+         /* Style for the drop zone */
+         #dropZone {
+             width: 100%;
+             max-width: 400px;
+             margin: 20px auto;
+             padding: 20px;
+             border: 2px dashed #ccc;
+             border-radius: 10px;
+             text-align: center;
+             color: #999;
+         }
+         #dropZone.dragover {
+             border-color: #000; /* Highlight border when dragging a file */
+             color: #000; /* Change text color when dragging a file */
+         }
+        </style>
+    </head>
+    <body style="font-family:system-ui;">
+        <div style="display:flex;justify-content:space-between;">
+            <h1>Rustic Bildge</h1>
+            <div style="display:flex;align-items:center;"><a href="/kill">Kill</a> Server</div>
+        </div>
+        <!-- Key Feature 1: Drag-and-Drop Support -->
+        <div id="dropZone">Drag and drop a file here or click to select</div>
+        <!-- Hidden file input for fallback and click-to-select -->
+        <input type="file" id="fileInput" style="display: none;">
+        <!-- Response area to show upload result -->
+        <div id="response" style="margin-top: 20px;"></div>
+        <script>
+         const dropZone = document.getElementById('dropZone');
+         const fileInput = document.getElementById('fileInput');
+         const responseDiv = document.getElementById('response');
+         // Highlight the drop zone when dragging a file (Key Feature 3 : clear display of receiving drag and drop)
+         dropZone.addEventListener('dragover', (event) => {
+             event.preventDefault(); // Prevent default to allow drop
+             dropZone.classList.add('dragover'); // Add highlight class
+         });
+         // Remove highlight when dragging leaves the drop zone (Key Feature 3)
+         dropZone.addEventListener('dragleave', () => {
+             dropZone.classList.remove('dragover');
+         });
+         // Handle file drop (Key Feature 1 : File drag and drop)
+         dropZone.addEventListener('drop', async (event) => {
+             event.preventDefault(); // Prevent default behavior
+             dropZone.classList.remove('dragover'); // Remove highlight
+             const files = event.dataTransfer.files; // Get the dropped files
+             if (files.length > 0) {
+                 await uploadFile(files);
+             }
+         });
+         // Handle click to open file input dialog (Key Feature 2 : Click for drag and drop)
+         dropZone.addEventListener('click', () => {
+             fileInput.click(); // Trigger file input dialog
+         });
+         // Handle file selection via input dialog (Key Feature 4: Fallback for unsupported devices)
+         fileInput.addEventListener('change', async (event) => {
+             const files = event.target.files; // Get the selected files
+             if (files.length > 0) {
+                 await uploadFile(files);
+             }
+         });
+         // Function to upload a file
+         async function uploadFile(files) {
+             const formData = new FormData();
+             Array.from(files).forEach((file) => formData.append('files', file));
+             try {
+                 const response = await fetch('/receiver', { // Send POST request to /upload
+                     method: 'POST',
+                                                             body: formData
+                 });
+                 const result = await response.json(); // Parse response
+                 responseDiv.textContent = `Upload successful: ${JSON.stringify(result, null, 2)}`;
+             } catch (error) {
+                 responseDiv.textContent = `Error uploading file: ${error}`;
+             }
+         }
+        </script>
+    </body>
+</html>

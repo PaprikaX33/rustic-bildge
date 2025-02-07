@@ -27,15 +27,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .version(env!("CARGO_PKG_VERSION"))
         .get_matches_from(wild::args());
-    match args.subcommand() {
-        Some(("config-generate", smatch)) => {
-            configurator::generate_boilerplate_config(PathBuf::from(
-                smatch.get_one::<String>("out").unwrap(),
-            ))
-            .unwrap();
-            return Ok(());
-        }
-        _ => {}
+    if let Some(("config-generate", smatch)) = args.subcommand() {
+        configurator::generate_boilerplate_config(PathBuf::from(
+            smatch.get_one::<String>("out").unwrap(),
+        ))
+        .unwrap();
+        return Ok(());
     }
     let config = configurator::load_config(args.get_one::<String>("cnf").map(PathBuf::from));
     println!("{:?}", config);

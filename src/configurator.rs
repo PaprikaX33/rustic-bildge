@@ -2,7 +2,6 @@ use serde::{self, Deserialize, Serialize};
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
-use toml;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AuthConfig {
