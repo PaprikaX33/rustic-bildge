@@ -14,6 +14,8 @@ pub struct AuthConfig {
     pub bind: String,
     #[serde(default = "AuthConfig::port_def")]
     pub port: u32,
+    #[serde(default = "AuthConfig::gen_parent")]
+    pub generate_parent: bool,
 }
 impl Default for AuthConfig {
     fn default() -> Self {
@@ -21,6 +23,7 @@ impl Default for AuthConfig {
             drop_location: Self::drop_def(),
             bind: Self::bind_def(),
             port: Self::port_def(),
+            generate_parent: Self::gen_parent(),
         }
     }
 }
@@ -33,6 +36,9 @@ impl AuthConfig {
     }
     fn port_def() -> u32 {
         8000
+    }
+    fn gen_parent() -> bool {
+        true
     }
 }
 pub fn load_config(directpath: Option<PathBuf>) -> AuthConfig {
