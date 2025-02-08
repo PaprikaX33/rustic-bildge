@@ -9,7 +9,11 @@ use axum::{
 use axum_macros::debug_handler;
 use serde::Serialize;
 use std::sync::Arc;
-use std::{io::Result, path::PathBuf, vec::Vec};
+use std::{
+    io::{ErrorKind, Result},
+    path::PathBuf,
+    vec::Vec,
+};
 use tokio::{fs, io, io::AsyncWriteExt};
 
 #[derive(Serialize, Debug)]
@@ -65,7 +69,11 @@ pub async fn receive(state: State<AppState>, mut multipart: Multipart) -> impl I
             .content_type()
             .unwrap_or("<no content type>")
             .to_string();
-        let file_path = state.drop_location.join(&file_name);
+        let file_path = match filename_normalization(state.drop_location.join(&file_name)).await {
+            Ok(fpath) => fpath,
+            Err(err) => return error_response(err).await,
+        };
+        println!("Saving: {}", &file_path.display());
         let mut fd = io::BufWriter::new(match fs::File::create(file_path).await {
             Ok(fd) => fd,
             Err(err) => return error_response(err).await,
@@ -77,7 +85,6 @@ pub async fn receive(state: State<AppState>, mut multipart: Multipart) -> impl I
                 return error_response(err).await;
             };
         }
-
         fields.push(FieldInfo {
             name,
             file_name,
@@ -104,7 +111,6 @@ async fn dirgen(path: Arc<PathBuf>) -> Result<()> {
     }
     Ok(())
 }
-//async fn error_response(err: std::io::Error) -> impl IntoResponse {
 async fn error_response(err: std::io::Error) -> axum::http::Response<axum::body::Body> {
     println!("Error generated: {}", err);
     Json(ResponseCode {
@@ -112,4 +118,26 @@ async fn error_response(err: std::io::Error) -> axum::http::Response<axum::body:
         success: false,
     })
     .into_response()
+}
+
+async fn filename_normalization(path: PathBuf) -> Result<PathBuf> {
+    let raw_file_path = path.canonicalize()?;
+    if fs::try_exists(&raw_file_path).await? {
+        file_rename(&raw_file_path)
+    } else {
+        Ok(raw_file_path)
+    }
+}
+fn file_rename(path: &std::path::Path) -> Result<PathBuf> {
+    return Ok(path.with_file_name(
+        [
+            path.file_stem()
+                .and_then(|s| s.to_str())
+                .ok_or(ErrorKind::NotFound)?,
+            "_",
+            &time::current_time_lin(),
+            path.extension().and_then(|s| s.to_str()).unwrap_or(""),
+        ]
+        .join(""),
+    ));
 }
