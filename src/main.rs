@@ -2,7 +2,7 @@ use clap::{Arg, Command};
 use std::path::PathBuf;
 mod configurator;
 mod server;
-
+mod time;
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Command::new("RusticBildge")
         .author("Paprika")
