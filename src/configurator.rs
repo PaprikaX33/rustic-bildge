@@ -14,8 +14,10 @@ pub struct AuthConfig {
     pub bind: String,
     #[serde(default = "AuthConfig::port_def")]
     pub port: u32,
-    #[serde(default = "AuthConfig::gen_parent")]
+    #[serde(default = "AuthConfig::gen_true")]
     pub generate_parent: bool,
+    #[serde(default = "AuthConfig::gen_false")]
+    pub reject_collision: bool,
 }
 impl Default for AuthConfig {
     fn default() -> Self {
@@ -23,7 +25,8 @@ impl Default for AuthConfig {
             drop_location: Self::drop_def(),
             bind: Self::bind_def(),
             port: Self::port_def(),
-            generate_parent: Self::gen_parent(),
+            generate_parent: Self::gen_true(),
+            reject_collision: Self::gen_false(),
         }
     }
 }
@@ -37,8 +40,11 @@ impl AuthConfig {
     fn port_def() -> u32 {
         8000
     }
-    fn gen_parent() -> bool {
+    fn gen_true() -> bool {
         true
+    }
+    fn gen_false() -> bool {
+        false
     }
 }
 pub fn load_config(directpath: Option<PathBuf>) -> AuthConfig {
