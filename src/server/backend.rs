@@ -10,7 +10,7 @@ use axum_macros::debug_handler;
 use serde::Serialize;
 use std::sync::Arc;
 use std::{io::Result, path::PathBuf, vec::Vec};
-use tokio::{fs, io};
+use tokio::{fs, io, io::AsyncWriteExt};
 
 #[derive(Serialize, Debug)]
 struct FieldInfo {
@@ -65,10 +65,17 @@ pub async fn receive(state: State<AppState>, mut multipart: Multipart) -> impl I
             .content_type()
             .unwrap_or("<no content type>")
             .to_string();
-
+        let file_path = state.drop_location.join(&file_name);
+        let mut fd = io::BufWriter::new(match fs::File::create(file_path).await {
+            Ok(fd) => fd,
+            Err(err) => return error_response(err).await,
+        });
         let mut size = 0;
         while let Some(chunk) = field.chunk().await.unwrap_or(None) {
             size += chunk.len();
+            if let Err(err) = fd.write_all(&chunk).await {
+                return error_response(err).await;
+            };
         }
 
         fields.push(FieldInfo {
@@ -77,6 +84,9 @@ pub async fn receive(state: State<AppState>, mut multipart: Multipart) -> impl I
             content_type,
             size,
         });
+        if let Err(err) = fd.flush().await {
+            return error_response(err).await;
+        };
     }
     //for i in fields {}
     println!("Recieved: {:?}", fields);
@@ -93,4 +103,13 @@ async fn dirgen(path: Arc<PathBuf>) -> Result<()> {
         fs::create_dir_all(&*path).await?
     }
     Ok(())
+}
+//async fn error_response(err: std::io::Error) -> impl IntoResponse {
+async fn error_response(err: std::io::Error) -> axum::http::Response<axum::body::Body> {
+    println!("Error generated: {}", err);
+    Json(ResponseCode {
+        body: format!("{}", err).to_string(),
+        success: false,
+    })
+    .into_response()
 }
