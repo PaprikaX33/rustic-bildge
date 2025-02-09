@@ -129,7 +129,7 @@ async fn filename_normalization(path: PathBuf) -> Result<PathBuf> {
     }
 }
 fn file_rename(path: &std::path::Path) -> Result<PathBuf> {
-    return Ok(path.with_file_name(
+    Ok(path.with_file_name(
         [
             path.file_stem()
                 .and_then(|s| s.to_str())
@@ -139,5 +139,5 @@ fn file_rename(path: &std::path::Path) -> Result<PathBuf> {
             path.extension().and_then(|s| s.to_str()).unwrap_or(""),
         ]
         .join(""),
-    ));
+    ))
 }
