@@ -30,7 +30,13 @@ pub fn load_config(directpath: Option<PathBuf>) -> AuthConfig {
     let config: AuthConfig =
         toml::from_str(&config_content).expect("Failed to parse configuration file");
     println! {"Config loaded successfully"};
-    config
+    AuthConfig {
+        drop_location: config
+            .drop_location
+            .canonicalize()
+            .expect("Invalid drop location"),
+        ..config
+    }
 }
 
 pub fn generate_boilerplate_config(path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {

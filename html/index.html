@@ -72,8 +72,7 @@
              Array.from(files).forEach((file) => formData.append('files', file));
              try {
                  const response = await fetch('/receiver', { // Send POST request to /upload
-                     method: 'POST',
-                                                             body: formData
+                     method: 'POST',body: formData
                  });
                  const result = await response.json(); // Parse response
                  responseDiv.textContent = `Upload successful: ${JSON.stringify(result, null, 2)}`;
