@@ -1,5 +1,5 @@
 use crate::configurator::AuthConfig;
-use std::path::PathBuf;
+use crate::state::AppState;
 mod backend;
 mod frontpage;
 use axum::{
@@ -8,9 +8,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use std::sync::Arc;
 use tokio::runtime::Runtime;
-use tokio::sync::Notify;
 
 /**
 # Note
@@ -24,17 +22,13 @@ pub fn run_server(config: AuthConfig) -> Result<(), Box<dyn std::error::Error>> 
 }
 
 async fn init_server(config: AuthConfig) {
-    let data = match config.drop_location.canonicalize() {
+    let bind_form = format!("{}:{}", config.bind, config.port);
+    let app_state = AppState::new(config);
+    let data = match app_state.drop_location.clone().canonicalize() {
         Ok(val) => val.display().to_string(),
         Err(_) => "Invalid Path".to_string(),
     };
-    let shutdown_trigger = Arc::new(Notify::new());
-    let app_state = AppState {
-        shutdown_trigger: shutdown_trigger.clone(),
-        drop_location: Arc::new(config.drop_location),
-        parent: Arc::new(config.generate_parent),
-    };
-
+    let shutdown_trigger = app_state.shutdown_trigger.clone();
     // build our application with a single route
     let app = Router::new()
         .route("/debug", get(move || async move { format!("{:?}", data) }))
@@ -47,25 +41,16 @@ async fn init_server(config: AuthConfig) {
         .with_state(app_state);
 
     // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.bind, config.port))
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(bind_form).await.unwrap();
     axum::serve(listener, app)
         .with_graceful_shutdown(async move { shutdown_trigger.notified().await })
         .await
         .expect("Failed to run server");
 }
 
-#[derive(Clone)]
-struct AppState {
-    shutdown_trigger: Arc<Notify>,
-    drop_location: Arc<PathBuf>,
-    parent: Arc<bool>,
-}
-
 // Trigger shutdown handler
 async fn shutdown(State(state): State<AppState>) -> &'static str {
     println!("Kill command received");
-    state.shutdown_trigger.notify_one();
+    state.kill();
     "Shutting down..."
 }
