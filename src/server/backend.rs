@@ -34,26 +34,10 @@ struct ResponseCode {
     success: bool,
     body: String,
 }
+
 #[debug_handler]
 pub async fn receive(state: State<AppState>, mut multipart: Multipart) -> impl IntoResponse {
     let mut fields = Vec::new();
-    if *state.parent {
-        if let Err(errm) = dirgen(state.drop_location.clone()).await {
-            tokio::spawn(
-                async move { while multipart.next_field().await.unwrap_or(None).is_some() {} },
-            );
-            println!(
-                "Unable to access {}: {}",
-                state.drop_location.display(),
-                errm
-            );
-            return Json(ResponseCode {
-                body: format!("{}", errm).to_string(),
-                success: false,
-            })
-            .into_response();
-        }
-    }
     while let Some(mut field) = match multipart.next_field().await {
         Ok(chunk) => chunk,
         Err(err) => {
@@ -106,12 +90,6 @@ pub async fn receive(state: State<AppState>, mut multipart: Multipart) -> impl I
     Json(resp).into_response()
 }
 
-async fn dirgen(path: Arc<PathBuf>) -> Result<()> {
-    if !fs::try_exists(&*path).await? {
-        fs::create_dir_all(&*path).await?
-    }
-    Ok(())
-}
 async fn error_response(err: std::io::Error) -> axum::http::Response<axum::body::Body> {
     println!("Error generated: {}", err);
     Json(ResponseCode {
