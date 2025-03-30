@@ -30,7 +30,7 @@
         <!-- Key Feature 1: Drag-and-Drop Support -->
         <div id="dropZone">Drag and drop a file here or click to select</div>
         <!-- Hidden file input for fallback and click-to-select -->
-        <input type="file" id="fileInput" style="display: none;">
+        <input type="file" id="fileInput" style="display: none;" multiple>
         <!-- Response area to show upload result -->
         <div id="response" style="margin-top: 20px;"></div>
         <script>
@@ -72,8 +72,7 @@
              Array.from(files).forEach((file) => formData.append('files', file));
              try {
                  const response = await fetch('/receiver', { // Send POST request to /upload
-                     method: 'POST',
-                                                             body: formData
+                     method: 'POST',body: formData
                  });
                  const result = await response.json(); // Parse response
                  responseDiv.textContent = `Upload successful: ${JSON.stringify(result, null, 2)}`;

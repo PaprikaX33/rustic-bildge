@@ -60,6 +60,7 @@ pub async fn receive(state: State<AppState>, mut multipart: Multipart) -> impl I
             return (StatusCode::BAD_REQUEST, format!("Error: {}", err)).into_response();
         }
     } {
+        println!("received:");
         let name = field.name().unwrap_or("<unnamed>").to_string();
         let file_name = field
             .file_name()
@@ -121,7 +122,10 @@ async fn error_response(err: std::io::Error) -> axum::http::Response<axum::body:
 }
 
 async fn filename_normalization(path: PathBuf) -> Result<PathBuf> {
-    let raw_file_path = path.canonicalize()?;
+    println!("path is {}", path.display());
+    //NOTE: canonicalize also checks if path is exists
+    let raw_file_path = path;
+    println!("Checking {}", raw_file_path.display());
     if fs::try_exists(&raw_file_path).await? {
         file_rename(&raw_file_path)
     } else {
@@ -129,15 +133,16 @@ async fn filename_normalization(path: PathBuf) -> Result<PathBuf> {
     }
 }
 fn file_rename(path: &std::path::Path) -> Result<PathBuf> {
-    return Ok(path.with_file_name(
+    Ok(path.with_file_name(
         [
             path.file_stem()
                 .and_then(|s| s.to_str())
-                .ok_or(ErrorKind::NotFound)?,
+                .ok_or(ErrorKind::Other)?,
             "_",
             &time::current_time_lin(),
+            ".",
             path.extension().and_then(|s| s.to_str()).unwrap_or(""),
         ]
         .join(""),
-    ));
+    ))
 }
