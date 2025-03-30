@@ -14,7 +14,6 @@ Main State object
 pub struct AppState {
     pub shutdown_trigger: Arc<Notify>,
     pub drop_location: Arc<PathBuf>,
-    pub parent: Arc<bool>,
 }
 
 impl AppState {
@@ -22,7 +21,6 @@ impl AppState {
         AppState {
             shutdown_trigger: Arc::new(Notify::new()),
             drop_location: Arc::new(config.drop_location),
-            parent: Arc::new(config.generate_parent),
         }
     }
     pub fn kill(&self) {
