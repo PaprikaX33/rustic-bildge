@@ -20,6 +20,7 @@ use tokio::runtime::Runtime;
 The wrapper for the tokio runtime.
 All server function is done by [init_server]
  **/
+
 pub fn run_server(config: AuthConfig) -> Result<(), Box<dyn std::error::Error>> {
     let runtime = Runtime::new()?;
     runtime.block_on(init_server(config))

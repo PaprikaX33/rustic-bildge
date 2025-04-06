@@ -1,6 +1,7 @@
 use clap::{Arg, Command};
 use std::path::PathBuf;
 mod configurator;
+mod manager;
 mod server;
 mod state;
 mod time;
