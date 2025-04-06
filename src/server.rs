@@ -2,7 +2,7 @@ use crate::configurator::AuthConfig;
 use crate::state::AppState;
 mod backend;
 mod frontpage;
-mod message;
+mod servermanager;
 use axum::{
     extract::{DefaultBodyLimit, State},
     response::Redirect,
