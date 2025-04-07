@@ -1,6 +1,5 @@
 /*!
-The internal state of the axum's server.
-Intended for all of the message passing mechanism within the axum
+Local manager for the server submodule
  */
 use crate::manager;
 use std::future::Future;

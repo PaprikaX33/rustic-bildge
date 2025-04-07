@@ -1,3 +1,6 @@
+/*!
+Deserializer of the toml configuration file
+ */
 use serde::{Deserialize, Deserializer};
 use std::env;
 use std::fs;
@@ -39,6 +42,7 @@ pub fn load_config(directpath: Option<PathBuf>) -> AuthConfig {
     }
 }
 
+/// Generate the boilerplate config file
 pub fn generate_boilerplate_config(path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     let config = AuthConfig::default();
     fs::write(path, toml::to_string_pretty(&config)?)?;
