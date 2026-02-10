@@ -13,6 +13,7 @@ use tokio::sync::{
 pub struct Manager {
     drop_location: Arc<RwLock<PathBuf>>,
     port: Arc<RwLock<u32>>,
+    ip: Option<String>,
     cmd: CommandChannelPair<Command>,
     shutdown_trigger: Arc<Notify>,
 }
@@ -45,6 +46,7 @@ impl Manager {
             shutdown_trigger: Arc::new(Notify::new()),
             port: Arc::new(RwLock::new(config.port)),
             cmd: mpsc::channel(10).into(),
+            ip: Some(config.bind),
         }
     }
 }
