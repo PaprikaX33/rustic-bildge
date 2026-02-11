@@ -1,3 +1,4 @@
+use directories::ProjectDirs;
 use serde::{Deserialize, Deserializer};
 use std::env;
 use std::fs;
@@ -6,17 +7,21 @@ pub use structure::AuthConfig;
 mod structure;
 
 pub fn load_config(directpath: Option<PathBuf>) -> AuthConfig {
-    let config_path = directpath.unwrap_or({
-        if cfg!(debug_assertions) {
-            // Debug mode: use the path relative to the package root
-            // Get the package root
-            let package_root = env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
-            Path::new(&package_root).join("config.toml")
-        } else {
-            // Release mode: locate right next to the executable
-            PathBuf::from("./config.toml")
-        }
-    });
+    let config_path = directpath
+        .or(ProjectDirs::from("", "Paprika", "rusticbildge")
+            .map(|pth| pth.config_dir().join("config.toml")))
+        .unwrap_or({
+            if cfg!(debug_assertions) {
+                // Debug mode: use the path relative to the package root
+                // Get the package root
+                let package_root =
+                    env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
+                Path::new(&package_root).join("config.toml")
+            } else {
+                // Release mode: locate right next to the executable
+                PathBuf::from("./config.toml")
+            }
+        });
     if !config_path.exists() {
         return AuthConfig::default();
     }
