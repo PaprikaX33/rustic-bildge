@@ -1,12 +1,14 @@
+use directories::ProjectDirs;
 use serde::{Deserialize, Deserializer};
 use std::env;
 use std::fs;
+use std::io;
 use std::path::{Path, PathBuf};
 pub use structure::AuthConfig;
 mod structure;
 
 pub fn load_config(directpath: Option<PathBuf>) -> AuthConfig {
-    let config_path = directpath.unwrap_or({
+    let config_path = directpath.or_else(config_usr_loc).unwrap_or({
         if cfg!(debug_assertions) {
             // Debug mode: use the path relative to the package root
             // Get the package root
@@ -39,9 +41,23 @@ pub fn load_config(directpath: Option<PathBuf>) -> AuthConfig {
     }
 }
 
-pub fn generate_boilerplate_config(path: PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+pub fn generate_config(path: Option<PathBuf>) -> Result<(), Box<dyn std::error::Error>> {
     let config = AuthConfig::default();
-    fs::write(path, toml::to_string_pretty(&config)?)?;
+    let location = path.or(config_usr_loc()).ok_or(io::Error::new(
+        io::ErrorKind::InvalidFilename,
+        "unable to deduce configuration path",
+    ))?;
+    let printable_loc = &location.as_path().display();
+    println!("Generating configuration in {}", printable_loc);
+    let parent = location.parent().ok_or(io::Error::new(
+        io::ErrorKind::NotADirectory,
+        "unable to deduce configuration directory",
+    ))?;
+    if !parent.try_exists()? {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(&location, toml::to_string_pretty(&config)?)?;
+    println!("Configuration has been generated in {}", printable_loc);
     Ok(())
 }
 
@@ -51,4 +67,9 @@ where
 {
     let s: String = Deserialize::deserialize(deserializer)?;
     Ok(PathBuf::from(s))
+}
+
+fn config_usr_loc() -> Option<PathBuf> {
+    ProjectDirs::from("", "Paprika", "rusticbildge")
+        .map(|pth| pth.config_dir().join("config.toml").to_path_buf())
 }
