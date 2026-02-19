@@ -41,6 +41,7 @@ async fn init_server(config: AuthConfig) -> Result<(), Box<dyn std::error::Error
         .route("/kill", get(shutdown))
         .route("/index", get(frontpage::serve))
         .route("/favicon.ico", get(frontpage::favicon))
+        .route("/icon.svg", get(frontpage::svgicon))
         .route("/", get(|| async { Redirect::permanent("/index") }))
         .route("/receiver", post(backend::receive))
         .layer(DefaultBodyLimit::disable())
