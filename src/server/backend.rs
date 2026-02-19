@@ -80,7 +80,6 @@ pub async fn receive(state: State<AppState>, mut multipart: Multipart) -> impl I
             return error_response(err).await;
         };
     }
-    //for i in fields {}
     println!("Recieved: {:?}", fields);
     let resp = MultiResponse {
         droploc: state.drop_location.display().to_string(),
