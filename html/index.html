@@ -161,8 +161,7 @@
              // Create UI rows upfront so user sees them immediately
              const items = list.map((file) => {
                  const ui = createUploadRow(file);
-                 responseDiv.appendChild(ui.row);
-                 //uploadsDiv.appendChild(ui.row);
+                 responseDiv.prepend(ui.row);
                  return { file, ui };
              });
 
