@@ -58,10 +58,13 @@
         <!-- Response area to show upload result -->
         <div id="response" style="margin-top: 20px;"></div>
         <script>
+
+         /* NOTE THIS STUFF IS VIBECODED TO HELL
+          * I DONT'T GET IT AT ALL */
          const dropZone = document.getElementById('dropZone');
          const fileInput = document.getElementById('fileInput');
          const responseDiv = document.getElementById('response');
-         // Highlight the drop zone when dragging a file (Key Feature 3 : clear display of receiving drag and drop)
+         // Highlight the drop zone when dragging a file
          dropZone.addEventListener('dragover', (event) => {
              event.preventDefault(); // Prevent default to allow drop
              dropZone.classList.add('dragover'); // visual highligher
@@ -76,7 +79,6 @@
              dropZone.classList.remove('dragover'); // Remove highlight
              const files = event.dataTransfer.files; // Get the dropped files
              if (files.length > 0) {
-                 //await uploadFile(files);
                  uploadFilesWithPerFileProgress(files);
              }
          });
@@ -88,24 +90,21 @@
          fileInput.addEventListener('change', async (event) => {
              const files = event.target.files; // Get the selected files
              if (files.length > 0) {
-                 //await uploadFile(files);
                  uploadFilesWithPerFileProgress(files);
              }
          });
          // Unit simplifier
          const formatFileSize = b =>
              b === 0 ? '0 B' :
-             `${parseFloat((b / 1024 ** (i = Math.floor(Math.log(b) / Math.log(1024)))).toFixed(2))} ${['B','KB','MB','GB','TB'][i]}`;
+             `${parseFloat((b / 1024 ** (i = Math.floor(Math.log(b) / Math.log(1024)))).toFixed(2))} ${['B','KB','MB','GB','TB', 'X'][i < 5 ? i : 5]}`;
          // Create the UI for the upload progress per stuff
          function createUploadRow(file) {
              const row = document.createElement("div");
              row.className = "upload-row";
              row.classList.add("uploading");
-
              row.style.cssText = "margin:8px 0; padding:8px; border:1px solid #ccc; border-radius:8px;";
 
              const title = document.createElement("div");
-             //title.textContent = `${file.name} (${(file.size / 1e6).toFixed(2)} MB)`;
              title.textContent = `${file.name} (${formatFileSize(file.size)})`;
 
              const progress = document.createElement("progress");
@@ -126,7 +125,7 @@
 
          function uploadOneFileXHR(file, {
              url = "/receiver",
-             fieldName = "files",     // keep same as your server expects
+             fieldName = "files", // Format from the server
              onProgress = () => {},
              onDone = () => {},
              onError = () => {},
