@@ -44,6 +44,7 @@ async fn init_server(config: AuthConfig) -> Result<(), Box<dyn std::error::Error
         .route("/icon.svg", get(frontpage::svgicon))
         .route("/", get(|| async { Redirect::permanent("/index") }))
         .route("/receiver", post(backend::receive))
+        .route("/version", get(env!("CARGO_PKG_VERSION")))
         .layer(DefaultBodyLimit::disable())
         .fallback(frontpage::invalid)
         .with_state(app_state);
