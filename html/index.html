@@ -197,7 +197,7 @@
                          fieldName: "files",
                          onProgress(loaded, total) {
                              ui.progress.value = (loaded / total) * 100;
-                             ui.status.textContent = `Uploading… ${(ui.progress.value).toFixed(1)}% (formatFileSize(loaded) / formatFileSize(total))`;
+                             ui.status.textContent = `Uploading… ${(ui.progress.value).toFixed(1)}% (${formatFileSize(loaded)} / ${formatFileSize(total)})`;
                          },
                          onDone(result) {
                              ui.row.classList.remove("uploading");
