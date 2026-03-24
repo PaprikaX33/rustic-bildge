@@ -47,7 +47,7 @@ async fn init_server(config: AuthConfig) -> Result<(), Box<dyn std::error::Error
         .with_state(app_state);
 
     #[cfg(feature = "util")]
-    let app = app.route("/version", get(util::version));
+    let app = app.merge(util_routes());
 
     let app = app.merge(front_routes());
 
@@ -78,4 +78,10 @@ fn front_routes() -> Router {
         .route("/index", get(frontpage::serve))
         .route("/favicon.ico", get(frontpage::favicon))
         .route("/icon.svg", get(frontpage::svgicon))
+}
+
+fn util_routes() -> Router {
+    Router::new()
+        .route("/util/version", get(util::version))
+        .route("/util/feature", get(util::features))
 }
