@@ -1,3 +1,5 @@
+[[https://github.com/PaprikaX33/rustic-bildge/actions/workflows/rust.yml/badge.svg?branch=master]]
+
 * Rustic Bildge
   A simple and lightweight http upload and receiving tool
   
