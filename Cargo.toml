@@ -20,7 +20,9 @@ directories = "6.0.0"
 tray-item = { version = "0.10.0", optional = true }
 
 [features]
+default = ["util"]
 tray = ["tray-item"]
+util = []
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1"

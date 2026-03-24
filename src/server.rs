@@ -2,6 +2,7 @@ use crate::configurator::AuthConfig;
 use crate::state::AppState;
 mod backend;
 mod frontpage;
+#[cfg(feature = "util")]
 mod util;
 use axum::{
     extract::{DefaultBodyLimit, State},
@@ -45,10 +46,12 @@ async fn init_server(config: AuthConfig) -> Result<(), Box<dyn std::error::Error
         .route("/icon.svg", get(frontpage::svgicon))
         .route("/", get(|| async { Redirect::permanent("/index") }))
         .route("/receiver", post(backend::receive))
-        .route("/version", get(util::version))
         .layer(DefaultBodyLimit::disable())
         .fallback(frontpage::invalid)
         .with_state(app_state);
+
+    #[cfg(feature = "util")]
+    let app = app.route("/version", get(util::version));
 
     let listener = tokio::net::TcpListener::bind(bind_form).await.unwrap();
     axum::serve(listener, app)
