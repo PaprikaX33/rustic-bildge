@@ -1,5 +1,6 @@
 use axum::{
     body::Body,
+    http::StatusCode,
     response::Response,
     routing::{get, post},
 };
@@ -19,5 +20,12 @@ pub async fn features() -> Response {
             if cfg!(feature = "util") { "util" } else { "" },
             if cfg!(feature = "tray") { "tray" } else { "" },
         )))
+        .unwrap()
+}
+
+pub async fn checkalive() -> Response {
+    Response::builder()
+        .status(StatusCode::OK)
+        .body(Body::from("OK"))
         .unwrap()
 }

@@ -49,7 +49,10 @@
     <body style="font-family:system-ui;">
         <div style="display:flex;justify-content:space-between;">
             <div style="display:flex;align-items: center;"><img src="/icon.svg" height="64" width="64" /><h1>Rustic Bildge</h1></div>
-            <div style="display:flex;align-items:center;"><a href="/kill">Kill</a> Server</div>
+            <div style="display: flex;flex-direction: column;text-align: right;">
+                <div>Connection: <div id="conStats">RUN</div></div>
+                <div style="display:flex;align-items:center;"><a href="/kill">Kill</a> Server</div>
+            </div>
         </div>
         <!-- Key Feature 1: Drag-and-Drop Support -->
         <div id="dropZone">Drag and drop a file here or click to select</div>
@@ -217,6 +220,48 @@
                  });
              }
          }
+         let running = false;
+         function setStatus(text, fg, bg) {
+             document.getElementById("conStats").textContent = text;
+             document.getElementById("conStats").style.color = fg;
+             document.getElementById("conStats").style.backgroundColor = bg;
+             document.getElementById("conStats").style.display = "inline-block";
+             document.getElementById("conStats").style.padding = "4px 8px";
+             document.getElementById("conStats").style.fontWeight = "bold";
+             document.getElementById("conStats").style.borderRadius = "4px";
+         }
+         /* function setStatus(text, color) {
+          *     document.getElementById("conStats").textContent = text;
+          *     document.getElementById("conStats").style.color = color;
+          * } */
+         async function heartbeat() {
+             if (running) return;
+             running = true;
+             setStatus("RUN", "black", "goldenrod");
+             const controller = new AbortController();
+             const timeout = setTimeout(() => {
+                 controller.abort();
+             }, 3000); // timeout ms
+
+             try {
+                 const res = await fetch("/checkalive", { cache: "no-store", signal: controller.signal });
+                 //console.log("alive");
+                 if (res.ok){
+                     setStatus("OK", "white", "green");
+                 }
+                 else {setStatus("LOSS", "white", "red");}
+             } catch {
+                 setStatus("LOSS", "white", "red");
+             } finally {
+                 clearTimeout(timeout);
+                 running = false;
+                 setTimeout(heartbeat, 5000);
+             }
+         }
+         // Initial trigger of the heartbeat
+         heartbeat();
+
+         //setInterval(heartbeat, 5000);
         </script>
     </body>
 </html>
