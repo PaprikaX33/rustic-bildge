@@ -40,6 +40,7 @@ async fn init_server(config: AuthConfig) -> Result<(), Box<dyn std::error::Error
     let app = Router::new()
         .route("/debug", get(move || async move { format!("{:?}", data) }))
         .route("/kill", get(shutdown))
+        .route("/checkalive", get(util::checkalive))
         .route("/", get(|| async { Redirect::permanent("/index") }))
         .route("/receiver", post(backend::receive))
         .layer(DefaultBodyLimit::disable())
@@ -80,6 +81,7 @@ fn front_routes() -> Router {
         .route("/icon.svg", get(frontpage::svgicon))
 }
 
+#[cfg(feature = "util")]
 fn util_routes() -> Router {
     Router::new()
         .route("/util/version", get(util::version))
