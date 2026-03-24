@@ -2,6 +2,7 @@ use crate::configurator::AuthConfig;
 use crate::state::AppState;
 mod backend;
 mod frontpage;
+mod util;
 use axum::{
     extract::{DefaultBodyLimit, State},
     response::Redirect,
@@ -39,14 +40,16 @@ async fn init_server(config: AuthConfig) -> Result<(), Box<dyn std::error::Error
     let app = Router::new()
         .route("/debug", get(move || async move { format!("{:?}", data) }))
         .route("/kill", get(shutdown))
-        .route("/index", get(frontpage::serve))
-        .route("/favicon.ico", get(frontpage::favicon))
-        .route("/icon.svg", get(frontpage::svgicon))
         .route("/", get(|| async { Redirect::permanent("/index") }))
         .route("/receiver", post(backend::receive))
         .layer(DefaultBodyLimit::disable())
         .fallback(frontpage::invalid)
         .with_state(app_state);
+
+    #[cfg(feature = "util")]
+    let app = app.merge(util_routes());
+
+    let app = app.merge(front_routes());
 
     let listener = tokio::net::TcpListener::bind(bind_form).await.unwrap();
     axum::serve(listener, app)
@@ -68,4 +71,17 @@ async fn dirgen(path: &PathBuf) -> IORes<()> {
         fs::create_dir_all(&*path).await?
     }
     Ok(())
+}
+
+fn front_routes() -> Router {
+    Router::new()
+        .route("/index", get(frontpage::serve))
+        .route("/favicon.ico", get(frontpage::favicon))
+        .route("/icon.svg", get(frontpage::svgicon))
+}
+
+fn util_routes() -> Router {
+    Router::new()
+        .route("/util/version", get(util::version))
+        .route("/util/feature", get(util::features))
 }
